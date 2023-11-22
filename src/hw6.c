@@ -267,8 +267,13 @@ struct stack2
 
 void push2(struct stack2 *Stack, matrix_sf *c)
 {
-    Stack->operators[Stack->count] = c;
-    Stack->count++;
+    if (Stack->count >= 100)
+        return;
+    else
+    {
+        Stack->operators[Stack->count] = c;
+        Stack->count++;
+    }
 }
 
 matrix_sf *pop2(struct stack2 *Stack)
@@ -276,6 +281,7 @@ matrix_sf *pop2(struct stack2 *Stack)
     if (Stack->count > 0)
     {
         matrix_sf *temp = Stack->operators[Stack->count - 1];
+        Stack->operators[Stack->count - 1] = NULL;
         Stack->count--;
         return temp;
     }
@@ -307,9 +313,6 @@ matrix_sf *evaluate_expr_sf(char name, char *expr, bst_sf *root)
                     push2(Stack, add_mats_sf(two, one));
                 else if (postfix[i] == '*')
                     push2(Stack, mult_mats_sf(two, one));
-
-                free(one);
-                free(two);
             }
         }
     }
@@ -321,11 +324,56 @@ matrix_sf *evaluate_expr_sf(char name, char *expr, bst_sf *root)
     return newMatrix;
 }
 
-matrix_sf *execute_script_sf(char *filename)
+int checkLine(char *c)
 {
-    return NULL;
+    for (int i = 0; i < strlen(c); i++)
+    {
+        if (c[i] == '[')
+            return 1;
+    }
+    return 0;
 }
 
+matrix_sf *execute_script_sf(char *filename)
+{
+    FILE *file = fopen(filename, "r");
+
+    if (file == NULL)
+    {
+        perror("Error opening file");
+        return NULL;
+    }
+
+    char *line = NULL;
+    size_t len = 0;
+    char name;
+    char *expr;
+    matrix_sf *final;
+
+    bst_sf *root = NULL;
+
+    while (getline(&line, &len, file) != -1)
+    {
+        // Process the line (e.g., print it)
+        if (strlen(line) != 0)
+        {
+            name = *strtok(strdup(line), "=");
+            expr = strtok(NULL, "=");
+
+            if (checkLine(line))
+                root = insert_bst_sf(create_matrix_sf(name, expr), root);
+            else
+            {
+                final = evaluate_expr_sf(name, expr, root);
+                root = insert_bst_sf(final, root);
+            }
+        }
+    }
+
+    fclose(file);
+    free(root);
+    return final;
+}
 // This is a utility function used during testing. Feel free to adapt the code to implement some of
 // the assignment. Feel equally free to ignore it.
 matrix_sf *copy_matrix(unsigned int num_rows, unsigned int num_cols, int values[])
