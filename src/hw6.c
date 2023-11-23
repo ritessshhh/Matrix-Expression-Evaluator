@@ -1,5 +1,12 @@
 #include "hw6.h"
 
+/**
+ * @brief Inserts a bst node in the root
+ *
+ * @param mat Matrix to integrate in the node
+ * @param root To find the position to insert
+ * @return bst_sf* New free root
+ */
 bst_sf *insert_bst_sf(matrix_sf *mat, bst_sf *root)
 {
     if (root == NULL)
@@ -26,6 +33,13 @@ bst_sf *insert_bst_sf(matrix_sf *mat, bst_sf *root)
     return root;
 }
 
+/**
+ * @brief Finds a specified node
+ *
+ * @param name Name of the node
+ * @param root Root to find in
+ * @return matrix_sf* Returns specified node
+ */
 matrix_sf *find_bst_sf(char name, bst_sf *root)
 {
     if (root == NULL || root->mat->name == name)
@@ -39,6 +53,11 @@ matrix_sf *find_bst_sf(char name, bst_sf *root)
         return find_bst_sf(name, root->right_child);
 }
 
+/**
+ * @brief Frees all the nodes in the tree
+ *
+ * @param root Root to start freeing
+ */
 void free_bst_sf(bst_sf *root)
 {
     if (root == NULL)
@@ -53,6 +72,13 @@ void free_bst_sf(bst_sf *root)
     free(root);
 }
 
+/**
+ * @brief Adds two matrix
+ *
+ * @param mat1 Matrix one
+ * @param mat2 Matrix two
+ * @return matrix_sf* new matrix after adding
+ */
 matrix_sf *add_mats_sf(const matrix_sf *mat1, const matrix_sf *mat2)
 {
     if (mat1->num_rows == mat2->num_rows && mat1->num_cols == mat2->num_cols)
@@ -76,6 +102,13 @@ matrix_sf *add_mats_sf(const matrix_sf *mat1, const matrix_sf *mat2)
         return NULL;
 }
 
+/**
+ * @brief Multiplies two matrix
+ *
+ * @param mat1 Matrix one
+ * @param mat2 Matrix two
+ * @return matrix_sf* new matrix after multiplying
+ */
 matrix_sf *mult_mats_sf(const matrix_sf *mat1, const matrix_sf *mat2)
 {
     if (mat1->num_cols == mat2->num_rows)
@@ -107,6 +140,12 @@ matrix_sf *mult_mats_sf(const matrix_sf *mat1, const matrix_sf *mat2)
         return NULL;
 }
 
+/**
+ * @brief Returns a trnspose matrix
+ *
+ * @param mat Matrix to transpose
+ * @return matrix_sf* Transposed matrix
+ */
 matrix_sf *transpose_mat_sf(const matrix_sf *mat)
 {
     int rows = mat->num_rows;
@@ -127,6 +166,13 @@ matrix_sf *transpose_mat_sf(const matrix_sf *mat)
     return m;
 }
 
+/**
+ * @brief Create a matrix sf object
+ *
+ * @param name Name of the new matrix
+ * @param expr Expression to make the new matrix with
+ * @return matrix_sf* New matrix
+ */
 matrix_sf *create_matrix_sf(char name, const char *expr)
 {
     int rows, cols;
@@ -156,18 +202,34 @@ matrix_sf *create_matrix_sf(char name, const char *expr)
 }
 
 // InfixToPostfix methods....
+/**
+ * @brief Stack structure
+ *
+ */
 struct stack
 {
     char *operators;
     int count;
 };
 
+/**
+ * @brief Push elements in stack
+ *
+ * @param Stack Stack to push in
+ * @param c Element to push in
+ */
 void push(struct stack *Stack, char c)
 {
     Stack->operators[Stack->count] = c;
     Stack->count++;
 }
 
+/**
+ * @brief Pop element from the stack
+ *
+ * @param Stack Stack to pop
+ * @return char Element popped
+ */
 char pop(struct stack *Stack)
 {
     if (Stack->count > 0)
@@ -179,6 +241,12 @@ char pop(struct stack *Stack)
     return '\0'; // Return a sentinel value when the stack is empty
 }
 
+/**
+ * @brief Peek at the top element
+ *
+ * @param Stack Stack to peek
+ * @return char peeked element
+ */
 char peek(struct stack *Stack)
 {
     if (Stack->count > 0)
@@ -188,11 +256,23 @@ char peek(struct stack *Stack)
     return '\0'; // Return a sentinel value when the stack is empty
 }
 
+/**
+ * @brief Check operator
+ *
+ * @param c Operator
+ * @return int Returns 1 if found else 0
+ */
 int isOperator(char c)
 {
     return (c == '+' || c == '-' || c == '*' || c == '/' || c == '\'') ? 1 : 0;
 }
 
+/**
+ * @brief Check precedence of the operator
+ *
+ * @param c To check precedence
+ * @return int Returns precedence level
+ */
 int precedence(char c)
 {
     if (c == '+' || c == '-')
@@ -205,6 +285,12 @@ int precedence(char c)
         return 0;
 }
 
+/**
+ * @brief Convert infix expression to postfix
+ *
+ * @param infix infix expression
+ * @return char* Returns postfix expression
+ */
 char *infix2postfix_sf(char *infix)
 {
     char *postfix = malloc(sizeof(char) * (strlen(infix) + 1));
@@ -259,12 +345,22 @@ char *infix2postfix_sf(char *infix)
     return postfix;
 }
 
+/**
+ * @brief Stack with different elements
+ *
+ */
 struct stack2
 {
     matrix_sf *operators[100];
     int count;
 };
 
+/**
+ * @brief Pushes elements in stack
+ *
+ * @param Stack Stack to push in
+ * @param c Element to push
+ */
 void push2(struct stack2 *Stack, matrix_sf *c)
 {
     if (Stack->count >= 100)
@@ -276,6 +372,12 @@ void push2(struct stack2 *Stack, matrix_sf *c)
     }
 }
 
+/**
+ * @brief Pops the top element in stack
+ *
+ * @param Stack Stack to pop
+ * @return matrix_sf* Return popped element
+ */
 matrix_sf *pop2(struct stack2 *Stack)
 {
     if (Stack->count > 0)
@@ -288,6 +390,14 @@ matrix_sf *pop2(struct stack2 *Stack)
     return NULL; // Return a sentinel value when the stack is empty
 }
 
+/**
+ * @brief Evaluates the expressions
+ *
+ * @param name name of the new matrix
+ * @param expr expression to evaluate
+ * @param root root to find new elements
+ * @return matrix_sf*
+ */
 matrix_sf *evaluate_expr_sf(char name, char *expr, bst_sf *root)
 {
     char *postfix = infix2postfix_sf(expr);
@@ -324,6 +434,12 @@ matrix_sf *evaluate_expr_sf(char name, char *expr, bst_sf *root)
     return newMatrix;
 }
 
+/**
+ * @brief Checks line for [
+ *
+ * @param c expression to check
+ * @return int 1 if found else 0
+ */
 int checkLine(char *c)
 {
     for (int i = 0; i < strlen(c); i++)
@@ -334,6 +450,12 @@ int checkLine(char *c)
     return 0;
 }
 
+/**
+ * @brief Evaluate script from the files
+ *
+ * @param filename file name
+ * @return matrix_sf* final matrix formed
+ */
 matrix_sf *execute_script_sf(char *filename)
 {
     FILE *file = fopen(filename, "r");
