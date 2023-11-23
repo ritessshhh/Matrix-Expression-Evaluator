@@ -121,6 +121,7 @@ matrix_sf *add_mats_sf(const matrix_sf *mat1, const matrix_sf *mat2)
         int cols = mat1->num_cols;
 
         matrix_sf *m = malloc(sizeof(matrix_sf) + rows * cols * sizeof(int));
+        m->name = '?';
         m->num_rows = rows;
         m->num_cols = cols;
 
@@ -151,6 +152,7 @@ matrix_sf *mult_mats_sf(const matrix_sf *mat1, const matrix_sf *mat2)
         int cols = mat2->num_cols;
 
         matrix_sf *m = malloc(sizeof(matrix_sf) + rows * cols * sizeof(int));
+        m->name = '?';
         m->num_rows = rows;
         m->num_cols = cols;
 
@@ -185,6 +187,7 @@ matrix_sf *transpose_mat_sf(const matrix_sf *mat)
     int cols = mat->num_cols;
 
     matrix_sf *m = malloc(sizeof(matrix_sf) + rows * cols * sizeof(int));
+    m->name = '?';
     m->num_rows = cols;
     m->num_cols = rows;
 
@@ -409,12 +412,6 @@ void push2(struct stack2 *Stack, matrix_sf *c)
     }
 }
 
-/**
- * @brief Pops the top element in stack
- *
- * @param Stack Stack to pop
- * @return matrix_sf* Return popped element
- */
 matrix_sf *pop2(struct stack2 *Stack)
 {
     if (Stack->count > 0)
@@ -439,29 +436,27 @@ matrix_sf *evaluate_expr_sf(char name, char *expr, bst_sf *root)
 {
     char *postfix = infix2postfix_sf(expr);
 
-    struct stack2 *Stack = malloc(sizeof(struct stack2));
-    if (!Stack)
-        return NULL; // Check for malloc failure
-    Stack->count = 0;
+    struct stack2 Stack;
+
+    Stack.count = 0;
 
     for (int i = 0; postfix[i] != '\0'; i++) // Changed to postfix[i] != '\0'
     {
         if (isalpha(postfix[i]))
-            push2(Stack, find_bst_sf(postfix[i], root));
+            push2(&Stack, find_bst_sf(postfix[i], root));
 
         else
         {
             // Ensure operations on Stack are safe
-            if (Stack->count < 2 && (postfix[i] == '+' || postfix[i] == '*'))
+            if (Stack.count < 2 && (postfix[i] == '+' || postfix[i] == '*'))
             {
                 // Handle error: not enough operands
-                while (Stack->count > 0)
+                while (Stack.count > 0)
                 {
-                    matrix_sf *temp = pop2(Stack);
+                    matrix_sf *temp = pop2(&Stack);
                     if (temp && !isalpha(temp->name))
                         free(temp);
                 }
-                free(Stack);
                 free(postfix);
                 return NULL; // Indicate failure
             }
@@ -469,17 +464,18 @@ matrix_sf *evaluate_expr_sf(char name, char *expr, bst_sf *root)
             matrix_sf *mat1 = NULL, *mat2 = NULL;
             if (postfix[i] == '\'')
             {
-                mat1 = pop2(Stack);
-                push2(Stack, transpose_mat_sf(mat1));
+                mat1 = pop2(&Stack);
+                push2(&Stack, transpose_mat_sf(mat1));
             }
             else
             {
-                mat2 = pop2(Stack);
-                mat1 = pop2(Stack);
+                mat2 = pop2(&Stack);
+                mat1 = pop2(&Stack);
+
                 if (postfix[i] == '+')
-                    push2(Stack, add_mats_sf(mat1, mat2));
+                    push2(&Stack, add_mats_sf(mat1, mat2));
                 else if (postfix[i] == '*')
-                    push2(Stack, mult_mats_sf(mat1, mat2));
+                    push2(&Stack, mult_mats_sf(mat1, mat2));
             }
 
             // Free temporary matrices if needed
@@ -490,9 +486,8 @@ matrix_sf *evaluate_expr_sf(char name, char *expr, bst_sf *root)
         }
     }
 
-    matrix_sf *newMatrix = pop2(Stack);
+    matrix_sf *newMatrix = pop2(&Stack);
     newMatrix->name = name;
-    free(Stack);
     free(postfix); // Free the postfix string
 
     return newMatrix;
