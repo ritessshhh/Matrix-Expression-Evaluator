@@ -109,7 +109,7 @@ void free_bst_sf(bst_sf *root)
  * @brief Adds two matrix
  *
  * @param mat1 Matrix one
- * @param mat2 Matrix two
+ * @param mat2 Matrix twO
  * @return matrix_sf* new matrix after adding
  */
 matrix_sf *add_mats_sf(const matrix_sf *mat1, const matrix_sf *mat2)
